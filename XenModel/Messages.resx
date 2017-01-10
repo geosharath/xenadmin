@@ -11925,6 +11925,9 @@ To learn more about the [XenServer] Dynamic Workload Balancing feature or to sta
   <data name="VMSS_EMAIL_PAGE_TEXT" xml:space="preserve">
     <value>XenServer can send you email notifications when alerts associated with snapshot schedule jobs are raised, such as when a VM snapshot is created or when a snapshot operation fails.</value>
   </data>
+  <data name="VMSS_FAILED" xml:space="preserve">
+    <value>{0} ({1} VMs failed)</value>
+  </data>
   <data name="VMSS_FINISH_PAGE_CHECKBOX_TEXT" xml:space="preserve">
     <value>&amp;Run the new snapshot schedule job when I click Finish</value>
   </data>
@@ -11954,6 +11957,9 @@ To learn more about the [XenServer] Dynamic Workload Balancing feature or to sta
   </data>
   <data name="VMSS_SCHEDULED_SNAPSHOTS_DEFINED_FOR_SERVER" xml:space="preserve">
     <value>Snapshot schedules defined in server '{0}' ({1} out of {2} VMs currently in schedule):</value>
+  </data>
+  <data name="VMSS_SNAPSHOT_SUCCEEDED" xml:space="preserve">
+    <value>Snapshot schedule succeeded</value>
   </data>
   <data name="VMSS_TYPE" xml:space="preserve">
     <value>schedule</value>

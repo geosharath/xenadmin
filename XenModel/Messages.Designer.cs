@@ -34992,6 +34992,15 @@ namespace XenAdmin {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to {0} ({1} VMs failed).
+        /// </summary>
+        public static string VMSS_FAILED {
+            get {
+                return ResourceManager.GetString("VMSS_FAILED", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to &amp;Run the new snapshot schedule job when I click Finish.
         /// </summary>
         public static string VMSS_FINISH_PAGE_CHECKBOX_TEXT {
@@ -35078,6 +35087,15 @@ namespace XenAdmin {
         public static string VMSS_SCHEDULED_SNAPSHOTS_DEFINED_FOR_SERVER {
             get {
                 return ResourceManager.GetString("VMSS_SCHEDULED_SNAPSHOTS_DEFINED_FOR_SERVER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Snapshot schedule succeeded.
+        /// </summary>
+        public static string VMSS_SNAPSHOT_SUCCEEDED {
+            get {
+                return ResourceManager.GetString("VMSS_SNAPSHOT_SUCCEEDED", resourceCulture);
             }
         }
         

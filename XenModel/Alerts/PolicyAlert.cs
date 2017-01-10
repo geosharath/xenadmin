@@ -30,11 +30,13 @@
  */
 
 using System;
+using System.Text.RegularExpressions;
 using System.Globalization;
 using System.Text;
 using System.Xml;
 using XenAdmin.Network;
 using XenAPI;
+using System.Collections.Generic;
 
 namespace XenAdmin.Alerts
 {
@@ -43,16 +45,51 @@ namespace XenAdmin.Alerts
         public readonly string Type;
         public readonly string Text;
         public readonly DateTime Time;
+        public readonly string PolicyType;
+        public readonly int numberOfVMsFailed;
 
-        public PolicyAlert(long priority, string name, DateTime _time)
+        public PolicyAlert(long priority, string name, DateTime _time, string body)
         {
             Type = (priority == 4 ? "info": "error");
             Time = _time;
-            Text = Message.FriendlyBody(name);
+            PolicyType = "VMSS";
+
+            if(Type == "info")
+            {
+                Text = Message.FriendlyName(body);
+                return;
+            }
+
+            /* We reach here when message type is an error hence we need 
+             * to parse the message body accordingly */
+
+            numberOfVMsFailed = Regex.Matches(body, "VM:").Count;
+            string[] strArr = Regex.Split(body.Replace("\n", " "), "Details:");
+            Text = strArr[0] + "\n\nDetails:\n";
+
+            /* get a list of all VMs that have encountered an error */
+            string[] vmList = Regex.Split(strArr[1], "VM:");
+
+            /* for each VM entry parse the data and get VM name and corresponding error message */
+            for (int vmIterator = 1; vmIterator < vmList.Length; vmIterator++)
+            {
+                vmList[vmIterator].Trim();
+                string[] tmp = Regex.Split(vmList[vmIterator], "Error:");
+                string vmName = Regex.Split(tmp[0], "UUID:")[0];
+              
+                string[] errorCode = Regex.Split(tmp[1].Replace("[", "").Replace("],", "").Replace("]", "").Replace("\'", "\""), "\",");
+                for (int errorCodeIterator = 0; errorCodeIterator < errorCode.Length; errorCodeIterator++)
+                    errorCode[errorCodeIterator] = errorCode[errorCodeIterator].Replace("\"", "").Trim();
+
+                string errorMessage = new Failure(errorCode).ShortMessage;
+                Text += vmIterator +") " + vmName.Trim() + ": " + errorMessage + '\n';
+            }
         }
 
         public PolicyAlert(IXenConnection connection, string body)
         {
+            PolicyType = "VMPP";
+            numberOfVMsFailed = Text.Split('\n').Length;
             var sb = new StringBuilder();
             try
             {
@@ -115,8 +152,15 @@ namespace XenAdmin.Alerts
                 {
                     if (Type == "error")
                     {
-                        int numberOfVMsFailed = Text.Split('\n').Length;
-                        return string.Format(Messages.VM_PROTECTION_POLICY_FAILED, Message.FriendlyName(XenAPI.Message.MessageType.VMPP_SNAPSHOT_FAILED.ToString()), numberOfVMsFailed);
+                        
+                        if (PolicyType == "VMSS")
+                        {  
+                            return string.Format(Messages.VMSS_FAILED, Message.FriendlyName(XenAPI.Message.MessageType.VMSS_SNAPSHOT_FAILED.ToString()), numberOfVMsFailed);
+                        }
+                        else
+                        {
+                            return string.Format(Messages.VM_PROTECTION_POLICY_FAILED, Message.FriendlyName(XenAPI.Message.MessageType.VMPP_SNAPSHOT_FAILED.ToString()), numberOfVMsFailed);
+                        }  
                     }
                     else return Text;
                 }
