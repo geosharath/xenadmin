@@ -1,3 +1,5 @@
+#!/bin/sh
+
 # Copyright (c) Citrix Systems, Inc. 
 # All rights reserved.
 # 
@@ -28,27 +30,33 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF 
 # SUCH DAMAGE.
 
-set -eu
-echo "INFO: bump build number"
-if [ $get_JOB_NAME = "devbuild" ] ; then
-    echo Warning: devbuild detected so we will skip the build number increment. All dev builds will have build number 0.
-    exit 0
-fi
+# help script to download third party binaries to local dev environment
 
-source "$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/declarations.sh"
+echo -n "Artifactory domain (e.g. artifactory.domain.com): "
+read DOMAIN
+echo -n "Username: "
+read USERNAME
+echo -n "Password: "
+read -s PASSWORD
 
-url="${JENKINS_SERVER}/job/${get_JOB_NAME}/"
-if curl -n -s -k --fail "${url}" -o out.tmp ; then
-  echo "INFO:	URL exists: ${url}"
-else
-  echo "ERROR:	URL does not exist: ${url}"
-  exit 1
-fi
+SCRIPT_DIR=$(cd $(dirname ${BASH_SOURCE[0]})/../packages && pwd)
 
-NEXT_BN=$(curl -s -n -k "http://hg.uk.xensource.com/cgi/next-xenadmin?job=$get_JOB_NAME&number=$get_BUILD_NUMBER&rev=$get_REVISION")
+#dotnet packages
 
-echo "INFO:	NEXT_BN=${NEXT_BN}"
+BUILD_LOCATION=$(cat ${SCRIPT_DIR}/DOTNET_BUILD_LOCATION)
+DOTNET="https://${DOMAIN}/api/archive/download/${BUILD_LOCATION}/dotnet46?archiveType=zip"
+ZIP=dotnetpackages.zip
 
-curl -s -n -k --data "nextBuildNumber=${NEXT_BN}" --header "Content-Type: application/x-www-form-urlencoded" ${JENKINS_SERVER}/job/${get_JOB_NAME}/nextbuildnumber/submit
+curl --fail -u ${USERNAME}:${PASSWORD} ${DOTNET} -o ${SCRIPT_DIR}/${ZIP}
+unzip -o ${SCRIPT_DIR}/${ZIP} -d ${SCRIPT_DIR} "*.dll" "putty.exe" 
+rm -f ${SCRIPT_DIR}/${ZIP}
 
-set +u
+#unit test dependencies
+
+MOQ="Moq.dll"
+MOQ_URL="https://${DOMAIN}/ctx-local-contrib/Moq/4.0.10827.0/4.0/${MOQ}"
+NUNIT="nunit.framework.dll"
+NUNIT_URL="https://${DOMAIN}/ctx-local-contrib/NUnit/NUnit/2.5.2.9122/3.5/${NUNIT}"
+
+curl --fail ${MOQ_URL}   -o ${SCRIPT_DIR}/${MOQ}
+curl --fail ${NUNIT_URL} -o ${SCRIPT_DIR}/${NUNIT}

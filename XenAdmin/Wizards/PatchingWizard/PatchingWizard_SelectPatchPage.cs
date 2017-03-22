@@ -233,7 +233,7 @@ namespace XenAdmin.Wizards.PatchingWizard
         {
             foreach (PatchGridViewRow row in dataGridViewPatches.Rows)
             {
-                if (row.UpdateAlert.Name == Path.GetFileNameWithoutExtension(fileName))
+                if (string.Equals(row.UpdateAlert.Name, Path.GetFileNameWithoutExtension(fileName), StringComparison.OrdinalIgnoreCase))
                 {
                     return (XenServerPatchAlert)row.UpdateAlert;
                 }
@@ -328,7 +328,7 @@ namespace XenAdmin.Wizards.PatchingWizard
 
         private string UpdateExtension
         {
-            get { return SelectedUpdateType != UpdateType.ISO ? "." + Branding.Update : "." + Branding.UpdateIso; }
+            get { return "." + Branding.Update; }
         }
 
         private bool isValidFile(string fileName)
