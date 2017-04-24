@@ -27147,7 +27147,7 @@ namespace XenAdmin {
         
         /// <summary>
         ///   Looks up a localized string similar to Select one or more pools or standalone servers that you want to have updated.
-        ///Greyed out servers cannot be updated with automated updates..
+        ///Servers that cannot be updated with automated updates appear disabled in this list..
         /// </summary>
         public static string PATCHINGWIZARD_SELECTSERVERPAGE_RUBRIC_AUTOMATED_MODE {
             get {
@@ -32338,9 +32338,9 @@ namespace XenAdmin {
         /// <summary>
         ///   Looks up a localized string similar to {0} (version {1}).
         /// </summary>
-        public static string SUPP_PACK_DESCTIPTION {
+        public static string SUPP_PACK_DESCRIPTION {
             get {
-                return ResourceManager.GetString("SUPP_PACK_DESCTIPTION", resourceCulture);
+                return ResourceManager.GetString("SUPP_PACK_DESCRIPTION", resourceCulture);
             }
         }
         

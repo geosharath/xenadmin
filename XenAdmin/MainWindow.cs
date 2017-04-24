@@ -408,19 +408,19 @@ namespace XenAdmin
                                 if (statusBarAction != null)
                                 {
                                     statusBarAction.Changed -= actionChanged;
-                                    statusBarAction.Completed -= actionChanged;
+                                    statusBarAction.Completed -= actionCompleted;
                                 }
                                 statusBarAction = action;
                             }
                             action.Changed += actionChanged;
-                            action.Completed += actionChanged;
+                            action.Completed += actionCompleted;
                             actionChanged(action);
                             break;
                         }
                     case CollectionChangeAction.Remove:
                         {
                             action.Changed -= actionChanged;
-                            action.Completed -= actionChanged;
+                            action.Completed -= actionCompleted;
                             
                             int errors = ConnectionsManager.History.Count(a => a.IsCompleted && !a.Succeeded);
                             navigationPane.UpdateNotificationsButton(NotificationsSubMode.Events, errors);
@@ -436,6 +436,13 @@ namespace XenAdmin
             });
         }
 
+        void actionCompleted(ActionBase action)
+        {
+            actionChanged(action);
+            if (action is SrAction)
+                Program.Invoke(this, UpdateToolbars);
+        }
+
         void actionChanged(ActionBase action)
         {
             if (Program.Exiting)
@@ -446,6 +453,8 @@ namespace XenAdmin
 
         void actionChanged_(ActionBase action)
         {
+            if (action.SuppressProgressReport) // suppress updates when the PureAsyncAction runs the action to populate the ApiMethodsToRoleCheck
+                return;
              var meddlingAction = action as MeddlingAction;
              if (meddlingAction == null)
                  statusProgressBar.Visible = action.ShowProgress && !action.IsCompleted;
@@ -841,7 +850,7 @@ namespace XenAdmin
 
             log.InfoFormat("Connected to {0} (version {1}, build {2}.{3}) with {4} {5} (build {6}.{7})",
                 Helpers.GetName(master), Helpers.HostProductVersionText(master), Helpers.HostProductVersion(master),
-                Helpers.HostBuildNumber(master), Messages.XENCENTER, Branding.PRODUCT_VERSION_TEXT,
+                master.BuildNumberRaw, Messages.XENCENTER, Branding.PRODUCT_VERSION_TEXT,
                 Branding.XENCENTER_VERSION, Program.Version.Revision);
 
             // Check the PRODUCT_BRAND
@@ -1625,7 +1634,7 @@ namespace XenAdmin
                     if (!plugin.Enabled)
                         continue;
 
-                    foreach (Feature feature in plugin.Features)
+                    foreach (Plugins.Feature feature in plugin.Features)
                     {
                         var menuItemFeature = feature as MenuItemFeature;
 
